@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>城市洪涝韧性评估（演示版）</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+
+  <!-- ========== Landing：先选身份 ========== -->
+  <main class="container" id="landingView">
+    <section class="card">
+      <div class="card-hd">
+        <h2>选择身份进入系统</h2>
+        <div class="hint">无需账号密码。身份将影响报告措辞与建议模板，计算逻辑保持一致。</div>
+      </div>
+
+      <div class="card-bd">
+        <div class="role-grid">
+          <button class="role-card" data-role="gov">
+            <div class="role-title">政府部门</div>
+            <div class="role-desc">关注：治理优先级、短板诊断、政策建议</div>
+          </button>
+
+          <button class="role-card" data-role="ins">
+            <div class="role-title">保险机构</div>
+            <div class="role-desc">关注：风险分层、核保提示、定价要点（演示口径）</div>
+          </button>
+
+          <button class="role-card" data-role="ops">
+            <div class="role-title">基础设施运营方</div>
+            <div class="role-desc">关注：设施脆弱点、运维优先级、监测预警能力</div>
+          </button>
+        </div>
+
+        <div class="note" style="margin-top:12px;">
+          提示：进入后右上角可随时切换身份。
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========== Main：主页面 ========== -->
+  <div id="mainView" class="hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">R</div>
+        <div>
+          <div class="title">城市洪涝韧性评估（演示站）</div>
+          <div class="subtitle">熵权法 + TOPSIS（按流程展示关键中间结果）</div>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <!-- 右上角展示身份（可切换） -->
+        <select id="roleSelect" class="control">
+          <option value="gov">政府部门</option>
+          <option value="ins">保险机构</option>
+          <option value="ops">基础设施运营方</option>
+        </select>
+        <button id="btnPrint" class="btn btn-ghost">导出PDF / 打印</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- 基础信息 -->
+      <section class="card">
+        <div class="card-hd">
+          <h2>基础信息</h2>
+          <div class="hint">身份显示在右上角，可随时切换。</div>
+        </div>
+        <div class="card-bd grid2">
+          <div>
+            <label class="label">当前身份</label>
+            <div id="roleLabel" class="pill">政府部门</div>
+          </div>
+          <div>
+            <label class="label">评估信息</label>
+            <div class="row">
+              <input id="cityInput" class="control" placeholder="城市/项目名称（如：北京市）" value="北京市" />
+              <input id="dateInput" class="control" type="date" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 指标输入 -->
+      <section class="card">
+        <div class="card-hd">
+          <h2>指标输入（演示版，可改）</h2>
+          <div class="hint">至少需要 3 个评价对象才能稳定计算熵权。可先用示例数据一键填充。</div>
+        </div>
+
+        <div class="card-bd">
+          <div class="toolbar">
+            <button id="btnFillHigh" class="btn">填充示例：高韧性</button>
+            <button id="btnFillMid" class="btn">填充示例：中韧性</button>
+            <button id="btnFillLow" class="btn">填充示例：低韧性</button>
+            <div class="spacer"></div>
+            <button id="btnReset" class="btn btn-ghost">清空</button>
+          </div>
+
+          <div class="table-wrap">
+            <table id="indicatorTable">
+              <thead>
+                <tr>
+                  <th style="min-width: 220px;">指标（按四维度）</th>
+                  <th style="min-width: 90px;">方向</th>
+                  <th>对象A</th>
+                  <th>对象B</th>
+                  <th>对象C</th>
+                </tr>
+              </thead>
+              <tbody id="indicatorTbody"></tbody>
+            </table>
+          </div>
+
+          <div class="note">
+            说明：方向 = 正向（越大越好）/ 负向（越大越差）。本 Demo 用代表性指标演示；后续可扩展到 33 项。
+          </div>
+        </div>
+      </section>
+
+      <!-- 计算 -->
+      <section class="card">
+        <div class="card-hd">
+          <h2>计算与生成报告</h2>
+          <div class="hint">按流程：极差标准化 → 熵权权重 → TOPSIS 距离 → 贴近度指数。</div>
+        </div>
+        <div class="card-bd">
+          <div class="toolbar">
+            <button id="btnCompute" class="btn btn-primary">生成报告</button>
+            <div class="spacer"></div>
+            <div id="status" class="status">未计算</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 报告 -->
+      <section class="card report" id="report">
+        <div class="card-hd">
+          <h2>报告预览（极简版）</h2>
+          <div class="hint">包含：权重表、正负理想解（摘录）、距离与贴近度、短板Top3（解释作用）。</div>
+        </div>
+
+        <div class="card-bd" id="reportBody">
+          <div class="empty">点击“生成报告”后，这里会出现可导出的报告内容。</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      演示站：仅用于产品展示。正式版可接入完整 33 指标体系与真实数据源。
+    </footer>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
