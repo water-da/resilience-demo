@@ -1,49 +1,24 @@
-// 记录当前加载的示例数据级别（high, mid, low），用于动态生成报告建议
-window.currentDataLevel = 'mid'; 
-
-// ========= 基础配置：代表性指标（28项完整版）=========
+// ========= 基础配置：代表性指标（演示版）=========
 const INDICATORS = [
-  // --- 自然环境 ---
-  { key: "i1", name: "年降水量 (mm)", dim: "自然环境", dir: "neg" },
-  { key: "i2", name: "暴雨日数 (天/年)", dim: "自然环境", dir: "neg" },
-  { key: "i3", name: "极端降雨强度 (mm/h)", dim: "自然环境", dir: "neg" },
-  { key: "i4", name: "河网密度 (km/km²)", dim: "自然环境", dir: "pos" },
-  { key: "i5", name: "水位流速 (m/s)", dim: "自然环境", dir: "neg" },
-  { key: "i6", name: "易涝点分布密度 (个/km²)", dim: "自然环境", dir: "neg" },
-  { key: "i7", name: "DEM地形高程 (m)", dim: "自然环境", dir: "pos" },
-  { key: "i8", name: "下垫面不透水率 (%)", dim: "自然环境", dir: "neg" },
-  { key: "i9", name: "森林与湿地覆盖率 (%)", dim: "自然环境", dir: "pos" },
-
-  // --- 经济建设 ---
-  { key: "i10", name: "人均GDP (万元)", dim: "经济建设", dir: "pos" },
-  { key: "i11", name: "产业结构多样性 (0-1)", dim: "经济建设", dir: "pos" },
-  { key: "i12", name: "财政应急储备金 (亿元)", dim: "经济建设", dir: "pos" },
-  { key: "i13", name: "固定资产投资增长率 (%)", dim: "经济建设", dir: "pos" },
-  { key: "i14", name: "保险渗透率 (%)", dim: "经济建设", dir: "pos" },
-  { key: "i15", name: "人均可支配收入 (万元)", dim: "经济建设", dir: "pos" },
-
-  // --- 基础设施 ---
-  { key: "i16", name: "排水管网密度 (km/km²)", dim: "基础设施", dir: "pos" },
-  { key: "i17", name: "雨水泵站能力 (万m³/d)", dim: "基础设施", dir: "pos" },
-  { key: "i18", name: "海绵城市设施覆盖率 (%)", dim: "基础设施", dir: "pos" },
-  { key: "i19", name: "应急避难场所数量 (个)", dim: "基础设施", dir: "pos" },
-  { key: "i20", name: "物资储备库密度 (个/km²)", dim: "基础设施", dir: "pos" },
-  { key: "i21", name: "交通路网密度 (km/km²)", dim: "基础设施", dir: "pos" },
-  { key: "i22", name: "关键设施抗灾设防等级", dim: "基础设施", dir: "pos" },
-
-  // --- 信息化水平 ---
-  { key: "i23", name: "预警信息发布频次 (次/年)", dim: "信息化水平", dir: "pos" },
-  { key: "i24", name: "遥感监测密度 (次/月)", dim: "信息化水平", dir: "pos" },
-  { key: "i25", name: "公众风险意识指数 (1-10)", dim: "信息化水平", dir: "pos" },
-  { key: "i26", name: "社交媒体关注度 (指数)", dim: "信息化水平", dir: "pos" },
-  { key: "i27", name: "应急指挥平台完备性 (1-5)", dim: "信息化水平", dir: "pos" },
-  { key: "i28", name: "数据共享程度 (%)", dim: "信息化水平", dir: "pos" }
+  // 自然环境
+  { key: "rain_annual", name: "年降水量（mm）", dim: "自然环境", dir: "neg" },
+  { key: "storm_days", name: "暴雨日数（天/年）", dim: "自然环境", dir: "neg" },
+  { key: "imperv", name: "不透水率（%）", dim: "自然环境", dir: "neg" },
+  // 社会经济
+  { key: "gdp_pc", name: "人均GDP（万元）", dim: "社会经济", dir: "pos" },
+  { key: "emg_fund", name: "财政应急储备（亿元）", dim: "社会经济", dir: "pos" },
+  { key: "industry_div", name: "产业多样性（0-1）", dim: "社会经济", dir: "pos" },
+  // 基础设施
+  { key: "drain_density", name: "排水管网密度（km/km²）", dim: "基础设施", dir: "pos" },
+  { key: "pump_cap", name: "泵站能力（相对值）", dim: "基础设施", dir: "pos" },
+  { key: "sponge_cov", name: "海绵设施覆盖率（%）", dim: "基础设施", dir: "pos" },
+  // 信息化
+  { key: "warn_freq", name: "预警发布频次（次/年）", dim: "信息化", dir: "pos" },
+  { key: "rs_freq", name: "监测/遥感频次（次/年）", dim: "信息化", dir: "pos" },
+  { key: "platform", name: "应急平台完备性（1-5）", dim: "信息化", dir: "pos" },
 ];
 
 const OBJECTS = ["对象A", "对象B", "对象C"];
-// 注意：这里的维度名称必须和上面指标里的 dim 一致
-const DIMS = ["自然环境", "经济建设", "基础设施", "信息化水平"]; 
-
 
 // ========= Landing / Main 视图切换 =========
 const landingView = document.getElementById("landingView");
@@ -70,11 +45,6 @@ const reportBody = document.getElementById("reportBody");
 
 // ========= 状态（用localStorage记住身份，刷新不丢）=========
 const STORAGE_KEY_ROLE = "demo_role";
-
-// 图表实例（避免重复叠加）
-let chartS = null;
-let chartRadar = null;
-let chartGaps = null;
 
 function setRole(role) {
   roleSelect.value = role;
@@ -103,6 +73,7 @@ function showMain() {
 
 // ========= 初始化 =========
 function init() {
+  // 绑定 landing 身份选择
   roleCards.forEach(btn => {
     btn.addEventListener("click", () => {
       const role = btn.dataset.role;
@@ -111,13 +82,17 @@ function init() {
     });
   });
 
+  // 主页面：日期默认今天
   const today = new Date();
   dateInput.value = today.toISOString().slice(0, 10);
 
+  // 渲染指标表
   renderIndicatorTable();
 
+  // 右上角身份切换
   roleSelect.addEventListener("change", () => setRole(roleSelect.value));
 
+  // 按钮事件
   btnFillHigh.addEventListener("click", () => fillExample("high"));
   btnFillMid.addEventListener("click", () => fillExample("mid"));
   btnFillLow.addEventListener("click", () => fillExample("low"));
@@ -126,6 +101,8 @@ function init() {
   btnCompute.addEventListener("click", onCompute);
   btnPrint.addEventListener("click", () => window.print());
 
+  // 初次进入：先显示 landing（更符合你说的流程）
+  // 但同时把上次角色预选好
   setRole(getRole());
   showLanding();
 }
@@ -144,8 +121,7 @@ function renderIndicatorTable() {
     const tr = document.createElement("tr");
 
     const tdName = document.createElement("td");
-    tdName.innerHTML = `<div style="font-weight:700">${escapeHtml(ind.name)}</div>
-                        <div style="color:#9fb2d1;font-size:12px;margin-top:4px;">${escapeHtml(ind.dim)}</div>`;
+    tdName.innerHTML = `<div style="font-weight:700">${ind.name}</div><div style="color:#9fb2d1;font-size:12px;margin-top:4px;">${ind.dim}</div>`;
     tr.appendChild(tdName);
 
     const tdDir = document.createElement("td");
@@ -154,7 +130,7 @@ function renderIndicatorTable() {
       : `<span class="dir"><span class="badge-neg">负向</span><span style="color:#9fb2d1;font-size:12px;">越大越差</span></span>`;
     tr.appendChild(tdDir);
 
-    OBJECTS.forEach((_, objIdx) => {
+    OBJECTS.forEach((objName, objIdx) => {
       const td = document.createElement("td");
       const input = document.createElement("input");
       input.className = "cell-input";
@@ -175,40 +151,26 @@ function renderIndicatorTable() {
 function clearInputs() {
   document.querySelectorAll(".cell-input").forEach(inp => inp.value = "");
   statusEl.textContent = "已清空，未计算";
-  destroyCharts();
   reportBody.innerHTML = `<div class="empty">点击“生成报告”后，这里会出现可导出的报告内容。</div>`;
 }
 
-function destroyCharts(){
-  [chartS, chartRadar, chartGaps].forEach(ch => {
-    try { if (ch) ch.destroy(); } catch {}
-  });
-  chartS = chartRadar = chartGaps = null;
-}
-
 // ========= 示例数据 =========
-// ========= 示例数据 =========
-// ========= 示例数据（引入错位竞争，避免出现绝对的 1.0 和 0.0） =========
 function fillExample(level) {
-    window.currentDataLevel = level; 
   const presets = {
-    high: { 
-      // A 总体最好，但年降水量偏大，森林覆盖率不如 B
-      A: [580, 6, 40, 15, 1.2, 0.5, 45, 30, 38, 18, 0.85, 45, 8.5, 6.5, 8.0, 12, 150, 45, 120, 3.5, 8.5, 5, 50, 10, 9.0, 850, 5, 95],
-      // B 总体中等，但森林覆盖率和财政储备金是三者中最好的
-      B: [520, 5, 45, 13, 1.5, 0.8, 48, 35, 45, 16, 0.80, 55, 7.5, 5.5, 7.0, 10, 130, 40, 100, 3.0, 7.5, 4, 40, 8, 8.5, 750, 4, 85],
-      // C 总体最差，但极端降雨强度最小，且地形高程最高
-      C: [600, 7, 35, 11, 1.8, 1.2, 55, 40, 35, 14, 0.75, 40, 6.5, 4.5, 6.0, 8, 110, 35, 80, 2.5, 6.5, 4, 30, 6, 8.0, 650, 4, 75],
+    high: {
+      A: [520, 6, 45, 18, 120, 0.78, 9.2, 1.2, 38, 45, 60, 4.6],
+      B: [560, 8, 52, 16, 90,  0.70, 7.8, 1.0, 30, 35, 50, 4.2],
+      C: [610, 10, 60, 12, 60, 0.60, 6.2, 0.8, 22, 28, 40, 3.8],
     },
-    mid: { 
-      A: [680, 9, 60, 9, 2.2, 1.8, 35, 50, 28, 11, 0.65, 25, 4.5, 3.8, 5.5, 6, 85, 25, 65, 1.8, 5.5, 3, 25, 4, 6.5, 450, 3, 65],
-      B: [750, 8, 65, 10, 2.5, 2.0, 38, 55, 30, 10, 0.60, 28, 4.0, 3.5, 5.0, 5, 80, 20, 60, 1.5, 5.0, 3, 20, 3, 6.0, 400, 3, 60],
-      C: [700, 11, 55, 7, 2.8, 2.5, 30, 60, 22, 9, 0.55, 20, 3.5, 3.2, 4.5, 4, 75, 15, 55, 1.2, 4.5, 2, 15, 2, 5.5, 350, 2, 55],
+    mid: {
+      A: [600, 10, 60, 12, 70, 0.60, 6.5, 0.85, 22, 25, 35, 3.6],
+      B: [680, 13, 68, 10, 45, 0.52, 5.3, 0.70, 15, 18, 25, 3.0],
+      C: [740, 16, 75, 8,  30, 0.45, 4.6, 0.60, 10, 12, 18, 2.6],
     },
-    low: { 
-      A: [950, 15, 85, 5, 3.5, 4.0, 15, 70, 12, 6, 0.40, 8, 2.0, 1.5, 3.0, 3, 40, 8, 30, 0.8, 3.0, 2, 10, 1, 4.0, 200, 2, 35],
-      B: [1100, 14, 90, 6, 3.8, 4.5, 18, 75, 15, 5, 0.35, 10, 1.5, 1.2, 2.5, 2, 30, 5, 20, 0.5, 2.5, 1, 8, 1, 3.5, 150, 1, 25],
-      C: [1050, 17, 80, 3, 4.2, 5.0, 10, 80, 8, 4, 0.30, 5, 1.0, 1.0, 2.0, 1, 20, 3, 10, 0.3, 2.0, 1, 5, 0, 3.0, 100, 1, 15],
+    low: {
+      A: [720, 15, 78, 8,  28, 0.42, 4.3, 0.55, 10, 10, 14, 2.4],
+      B: [780, 18, 84, 7,  18, 0.35, 3.6, 0.45, 6,  7,  9,  2.0],
+      C: [860, 22, 90, 5,  10, 0.28, 2.8, 0.35, 3,  4,  6,  1.6],
     }
   };
 
@@ -218,14 +180,12 @@ function fillExample(level) {
   INDICATORS.forEach((ind, r) => {
     cols.forEach((arr, objIdx) => {
       const inp = document.querySelector(`.cell-input[data-key="${ind.key}"][data-obj="${objIdx}"]`);
-      if(inp) inp.value = arr[r];
+      inp.value = arr[r];
     });
   });
 
   statusEl.textContent = `已填充示例数据（${level === "high" ? "高" : level === "mid" ? "中" : "低"}韧性），未计算`;
 }
-
-
 
 // ========= 读取矩阵 =========
 function readMatrix() {
@@ -275,8 +235,10 @@ function normalizeMinMax(X) {
     const denom = colMax - colMin;
 
     for (let i = 0; i < m; i++) {
-      if (denom === 0) { Xn[i][j] = 0; continue; }
-
+      if (denom === 0) {
+        Xn[i][j] = 0;
+        continue;
+      }
       const x = X[i][j];
       Xn[i][j] = (INDICATORS[j].dir === "pos")
         ? (x - colMin) / denom
@@ -334,11 +296,15 @@ function topsis(Xn, w) {
   const pPlus = Array(n).fill(0);
   const pMinus = Array(n).fill(0);
 
-  // 注意：这里 Xn 已按方向做过“越大越好”的同向化，所以正理想=最大、负理想=最小
   for (let j = 0; j < n; j++) {
     const col = P.map(row => row[j]);
-    pPlus[j] = max(col);
-    pMinus[j] = min(col);
+    if (INDICATORS[j].dir === "pos") {
+      pPlus[j] = max(col);
+      pMinus[j] = min(col);
+    } else {
+      pPlus[j] = min(col);
+      pMinus[j] = max(col);
+    }
   }
 
   const Lplus = Array(m).fill(0);
@@ -362,45 +328,11 @@ function topsis(Xn, w) {
   return { P, pPlus, pMinus, Lplus, Lminus, S };
 }
 
-// ========= 维度聚合（用于雷达图） =========
-// 用“加权规范化矩阵 P”在维度内求和，再做0-1归一（可视化用）
-// ========= 维度聚合（用于雷达图） =========
-// 机制调整：计算“维度得分率”（实际得分 / 维度总权重），并加上视觉保底值避免缩成点
-function dimScoresFromP(P, w){
-  const m = P.length;
-  const dimIdx = {};
-  DIMS.forEach(d => dimIdx[d] = []);
-  INDICATORS.forEach((ind, j) => dimIdx[ind.dim].push(j));
-
-  const norm = Array.from({length:m}, () => DIMS.map(() => 0));
-
-  DIMS.forEach((d, di) => {
-    const indices = dimIdx[d];
-    // 该维度的理论满分（即该维度下所有指标的权重之和）
-    const dimWeightSum = sum(indices.map(j => w[j])); 
-
-    for (let i = 0; i < m; i++){
-      // 对象的实际维度得分
-      const objDimScore = sum(indices.map(j => P[i][j])); 
-      
-      // 计算得分率 [0, 1]
-      let ratio = dimWeightSum > 0 ? (objDimScore / dimWeightSum) : 0;
-      
-      // 【视觉优化核心】将 0~1 的得分率映射到 0.15~1.0 之间
-      // 这样即使得分为 0，在雷达图上也会有 15% 的半径，不会缩成一个看不见的点
-      norm[i][di] = ratio * 0.85 + 0.15; 
-    }
-  });
-
-  return { norm };
-}
-
-
 // ========= 短板Top3 =========
 function topGaps(P, pPlus, i, topN=3) {
   const gaps = INDICATORS.map((ind, j) => {
     const delta = Math.abs(P[i][j] - pPlus[j]);
-    return { j, key: ind.key, name: ind.name, dim: ind.dim, dir: ind.dir, delta };
+    return { j, name: ind.name, dim: ind.dim, delta };
   });
   gaps.sort((a,b)=>b.delta - a.delta);
   return gaps.slice(0, topN);
@@ -416,142 +348,15 @@ function escapeHtml(s){
   return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 }
 
-
-
-function localAdviceHtml(role){
-  if (role === "gov") {
-    return `<ul>
-      <li>优先补齐短板指标对应领域（以“差距最大项”为治理抓手）。</li>
-      <li>建立年度更新机制，提升样本时序可比性。</li>
-      <li>将“工程能力 + 管理机制 + 信息化闭环”一起纳入绩效考核。</li>
-    </ul>`;
-  }
-  if (role === "ins") {
-    return `<ul>
-      <li>对贴近度较低对象提高核保关注等级（演示口径）。</li>
-      <li>将短板项作为风险问询要点（排水能力、预警能力等）。</li>
-      <li>建议将韧性结果与历史损失、暴露度数据联动校准。</li>
-    </ul>`;
-  }
-  return `<ul>
-    <li>针对短板项制定巡检/改造优先级（排水、监测、关键节点冗余）。</li>
-    <li>将评估结果纳入运维计划年度滚动更新。</li>
-    <li>把“发现-派单-处置-反馈-复盘”做成闭环指标。</li>
-  </ul>`;
-}
-
-// ========= 图表渲染 =========
-function renderCharts({S, bestIdx, worstIdx, dimNorm, gaps, gradeColors}){
-  const ctxS = document.getElementById("chartS");
-  const ctxRadar = document.getElementById("chartRadar");
-  const ctxGaps = document.getElementById("chartGaps");
-
-  destroyCharts();
-
-  // 1) 贴近度柱状图
-  chartS = new Chart(ctxS, {
-    type: "bar",
-    data: {
-      labels: OBJECTS,
-      datasets: [{
-        label: "贴近度 S（韧性指数）",
-        data: S.map(v => Number(v.toFixed(4))),
-        backgroundColor: OBJECTS.map((_, i) =>
-          i === bestIdx ? "rgba(45,212,191,.75)" :
-          i === worstIdx ? "rgba(255,107,107,.70)" :
-          "rgba(87,166,255,.65)"
-        ),
-        borderColor: "rgba(255,255,255,.10)",
-        borderWidth: 1,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: {
-          label: (c) => ` S = ${c.raw}`
-        }}
-      },
-      scales: {
-        x: { ticks: { color: "rgba(232,240,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } },
-        y: { min: 0, max: 1, ticks: { color: "rgba(232,240,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } }
-      }
-    }
-  });
-
-  // 2) 维度雷达图（基于P的维度聚合归一）
-  chartRadar = new Chart(ctxRadar, {
-    type: "radar",
-    data: {
-      labels: DIMS,
-      datasets: OBJECTS.map((name, i) => ({
-        label: name,
-        data: dimNorm[i].map(v => Number(v.toFixed(4))),
-        borderColor: i === bestIdx ? "rgba(45,212,191,.9)" : i === worstIdx ? "rgba(255,107,107,.9)" : "rgba(87,166,255,.85)",
-        backgroundColor: i === bestIdx ? "rgba(45,212,191,.15)" : i === worstIdx ? "rgba(255,107,107,.12)" : "rgba(87,166,255,.10)",
-        pointRadius: 2
-      }))
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { labels: { color: "rgba(232,240,255,.78)" } } },
-      scales: {
-        r: {
-          min: 0,
-          max: 1,
-          ticks: { display: false },
-          grid: { color: "rgba(255,255,255,.08)" },
-          angleLines: { color: "rgba(255,255,255,.08)" },
-          pointLabels: { color: "rgba(232,240,255,.78)", font: { size: 12 } }
-        }
-      }
-    }
-  });
-
-  // 3) 短板差距图（最低对象 Top3）
-  chartGaps = new Chart(ctxGaps, {
-    type: "bar",
-    data: {
-      labels: gaps.map(g => g.name),
-      datasets: [{
-        label: "与正理想差距（越大越拖后腿）",
-        data: gaps.map(g => Number(g.delta.toFixed(6))),
-        backgroundColor: "rgba(255,209,102,.65)",
-        borderColor: "rgba(255,255,255,.10)",
-        borderWidth: 1,
-      }]
-    },
-    options: {
-      indexAxis: "y",
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: (c) => ` 差距 = ${c.raw}` } }
-      },
-      scales: {
-        x: { ticks: { color: "rgba(232,240,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } },
-        y: { ticks: { color: "rgba(232,240,255,.75)" }, grid: { color: "rgba(255,255,255,.06)" } }
-      }
-    }
-  });
-}
-
 // ========= 生成报告 =========
-async function onCompute() {
+function onCompute() {
   try {
-    statusEl.textContent = "计算中…";
     const X = readMatrix();
     const Xn = normalizeMinMax(X);
     const { e, d, w } = entropyWeights(Xn);
     const { P, pPlus, pMinus, Lplus, Lminus, S } = topsis(Xn, w);
-    const { norm: dimNorm } = dimScoresFromP(P,w);
 
     const roleText = roleLabel.textContent;
-    const role = roleSelect.value;
     const city = cityInput.value.trim() || "（未填写）";
     const date = dateInput.value;
 
@@ -563,9 +368,7 @@ async function onCompute() {
 
     const weightRows = INDICATORS.map((ind, j) => `
       <tr>
-        <td>${escapeHtml(ind.name)}
-          <div style="color:#9fb2d1;font-size:12px;margin-top:4px;">${escapeHtml(ind.dim)} · ${ind.dir === "pos" ? "正向" : "负向"}</div>
-        </td>
+        <td>${ind.name}<div style="color:#9fb2d1;font-size:12px;margin-top:4px;">${ind.dim} · ${ind.dir === "pos" ? "正向" : "负向"}</div></td>
         <td style="text-align:right;">${e[j].toFixed(4)}</td>
         <td style="text-align:right;">${d[j].toFixed(4)}</td>
         <td style="text-align:right;font-weight:800;">${w[j].toFixed(4)}</td>
@@ -574,8 +377,9 @@ async function onCompute() {
 
     const idealRows = INDICATORS.slice(0, 6).map((ind, j) => `
       <tr>
-        <td>${escapeHtml(ind.name)}</td>
+        <td>${ind.name}</td>
         <td style="text-align:right;">${pPlus[j].toFixed(6)}</td>
+        <td style="text-align:right;">${pMinus[j].toFixed(6)}</td>
       </tr>
     `).join("");
 
@@ -583,7 +387,7 @@ async function onCompute() {
       const g = gradeByS(S[i]);
       return `
         <tr>
-          <td style="font-weight:800">${escapeHtml(name)}</td>
+          <td style="font-weight:800">${name}</td>
           <td style="text-align:right;">${Lplus[i].toFixed(6)}</td>
           <td style="text-align:right;">${Lminus[i].toFixed(6)}</td>
           <td style="text-align:right;font-weight:900;color:${g.color};">${S[i].toFixed(4)}</td>
@@ -592,117 +396,43 @@ async function onCompute() {
       `;
     }).join("");
 
-        // ================= 动态生成短板与优势文案 (专家级) =================
-    
-    // 1. 维度专属点评词库（优势）
-    const dimAdvantageMap = {
-      "自然环境": "赋予了城市天然的生态韧性底座，有效削减了极端天气带来的灾害峰值。",
-      "基础设施": "构筑了坚实的物理防线，极大提升了系统的排涝吞吐量与工程冗余度。",
-      "经济建设": "为防灾减灾提供了充沛的资金与资源保障，确保了灾后快速恢复的弹力。",
-      "社会环境": "反映了极高的社会动员与自救互救能力，有效降低了生命财产暴露风险。",
-      "管理机制": "体现了前瞻性的应急规划与高效的跨部门协同效能，实现了从被动到主动的跨越。"
-    };
-
-    // 2. 维度专属点评词库（劣势）
-    const dimDisadvantageMap = {
-      "自然环境": "先天本底条件较为脆弱，面对极端暴雨时极易迅速转化为灾害风险。",
-      "基础设施": "工程防线存在明显欠账，排涝标准与系统冗余度无法满足当前气候挑战。",
-      "经济建设": "财政与资源投入相对匮乏，限制了防灾减灾硬件升级与灾后恢复的速度。",
-      "社会环境": "公众防灾意识与基层动员能力薄弱，放大了灾害发生时的社会脆弱性。",
-      "管理机制": "应急预案与协同联动机制尚不健全，容易导致灾害响应滞后与管理失灵。"
-    };
-
-    // 3. 计算最差对象的短板 Top3
     const gaps = topGaps(P, pPlus, worstIdx, 3);
-    const worstGapList = gaps.map((g, index) => {
-      const descText = dimDisadvantageMap[g.dim] || "该指标严重偏离最优水平，是导致整体韧性评级垫底的核心制约因素。";
-      const prefix = ["最大短板", "次要痛点", "潜在隐患"][index];
-      return `<li style="margin-bottom:8px;"><strong>${escapeHtml(g.name)}</strong>（${escapeHtml(g.dim)}）：与正理想差距 ${g.delta.toFixed(6)}。<br/><span style="color:#aaa; font-size:13px;">↳ 作为${prefix}，${descText}</span></li>`;
-    }).join("");
+    const gapList = gaps.map(g => `<li><b>${g.name}</b>（${g.dim}）：与正理想差距 ${g.delta.toFixed(6)}</li>`).join("");
 
-    // 4. 计算最优对象的优势 Top3
-    const bestGaps = INDICATORS.map((ind, j) => {
-      return { name: ind.name, dim: ind.dim, gap: pPlus[j] - P[bestIdx][j] };
-    }).sort((a, b) => a.gap - b.gap).slice(0, 3);
-    
-    const bestGapList = bestGaps.map((g, index) => {
-      // 智能处理 0 差距的文案
-      const gapText = g.gap <= 0.000001 ? "<span style='color:#4facfe;'>达到全组最优水平（领跑者）</span>" : `与正理想差距仅为 ${g.gap.toFixed(6)}`;
-      const descText = dimAdvantageMap[g.dim] || "该指标表现优异，高度逼近理论最优状态，为整体系统提供了强大的抗冲击缓冲能力。";
-      const prefix = ["首要优势", "核心优势", "重要支撑"][index];
-      
-      return `<li style="margin-bottom:8px;"><strong>${escapeHtml(g.name)}</strong>（${escapeHtml(g.dim)}）：${gapText}。<br/><span style="color:#aaa; font-size:13px;">↳ 作为${prefix}，${descText}</span></li>`;
-    }).join("");
+    const advice = roleSelect.value === "gov"
+      ? `<ul>
+          <li>优先补齐短板指标对应领域（以“差距最大项”为治理抓手）。</li>
+          <li>建立年度更新机制，提升样本时序可比性。</li>
+        </ul>`
+      : roleSelect.value === "ins"
+      ? `<ul>
+          <li>对贴近度较低对象提高核保关注等级（演示口径）。</li>
+          <li>将短板项作为风险问询要点（排水能力、预警能力等）。</li>
+        </ul>`
+      : `<ul>
+          <li>针对短板项制定巡检/改造优先级（排水、监测、关键节点冗余）。</li>
+          <li>将评估结果纳入运维计划年度滚动更新。</li>
+        </ul>`;
 
-
-    // ================= 动态文案配置 (深度扩充版) =================
-    const levelTextMap = {
-      high: {
-        desc: "【高韧性场景】当前评估对象整体防涝基础扎实，系统具备较强的抗冲击与快速恢复能力。未来的核心诉求已从“被动防御”转向“主动适应”，短板主要集中在向“智慧化、生态化、精细化”进阶的瓶颈环节，需通过管理创新与前沿技术赋能来突破天花板。",
-        advices: `
-          <li style="margin-bottom: 12px;"><strong>深化智慧水务与数字孪生建设：</strong>在现有防涝体系基础上，全面引入物联网、大数据和人工智能技术，构建城市水务“数字孪生”平台。通过在关键管网、泵站、河道节点部署高精度传感器，实现对城市水文状态的毫秒级实时监测。结合气象预报数据，利用水动力学模型进行内涝风险的动态推演，从而在极端暴雨来临前实现精准预警与自动化调度，将“被动抢险”彻底升级为“主动防御”。</li>
-          <li style="margin-bottom: 12px;"><strong>打造海绵城市 2.0 生态标杆：</strong>超越传统的“渗、滞、蓄”功能，向更高维度的生态系统服务价值迈进。在现有绿化基础上，进一步提升透水铺装率和雨水调蓄池的综合利用率，将雨水资源化利用与城市景观设计深度融合。通过建设高标准的雨水花园、下凹式绿地和生态旱溪，不仅提升极端暴雨下的径流控制率，还能有效缓解城市热岛效应，改善微气候，实现生态效益与防涝效益的双赢。</li>
-          <li style="margin-bottom: 12px;"><strong>完善跨部门协同与金融风险分担机制：</strong>打破部门信息壁垒，建立水务、气象、应急、交通等多部门常态化的联合演练与数据共享机制。同时，积极引入市场化风险分担手段，探索推行巨灾保险和天气衍生品。通过金融工具将极端天气带来的巨额经济损失进行有效转移与分散，减轻政府财政的灾后重建压力，从社会经济维度全面夯实城市应对未知气候风险的综合韧性底座。</li>
-        `
-      },
-      mid: {
-        desc: "【中等韧性场景】当前评估对象防涝体系已初步成型，能够应对常规降雨挑战。但在应对极端暴雨或叠加灾害时仍存在局部脆弱性，系统冗余度有待提升，处于“补短板、强弱项”的关键转型期。",
-        advices: `
-          <li style="margin-bottom: 12px;"><strong>靶向改造老旧管网与消除内涝积水点：</strong>针对评估中识别出的高风险区域和短板指标（如历史易涝点、低标准管网），优先安排专项资金进行“外科手术式”的提标改造。对淤积严重、管径不足的地下排水管网进行清淤扩容，彻底打通城市排水的“微循环”梗阻。同时，建立易涝点动态销号制度，实行“一区一策”的精准治理，确保在下一个汛期来临前实质性降低核心城区的积水风险。</li>
-          <li style="margin-bottom: 12px;"><strong>全面提升应急响应效能与物资储备：</strong>优化现有排涝泵站的运行调度规则，确保在暴雨预警发布后能第一时间进行预抽空作业，腾出管网与河道调蓄空间。针对地下车库、下穿隧道等高危空间，增加挡水板、沙袋及移动抽水泵车等应急抢险设备的网格化储备。定期开展社区级的防汛应急演练，打通灾害预警到达基层民众的“最后一公里”，切实提升全社会的自救与互救能力。</li>
-          <li style="margin-bottom: 12px;"><strong>推进“蓝绿灰”基础设施的深度融合：</strong>在城市更新和新区建设中，严格落实海绵城市建设要求，避免单纯依赖传统的灰色管网工程。将自然水体（蓝）、生态绿地（绿）与人工排水设施（灰）有机结合，通过增加植被浅沟、雨水湿地等绿色基础设施，从源头削减地表径流峰值。这不仅能有效缓解传统管网的排水压力，还能延长管网使用寿命，构建更加弹性、可持续的城市水循环系统。</li>
-        `
-      },
-      low: {
-        desc: "【低韧性场景】当前评估对象整体韧性较弱，面临极高的内涝风险。基础设施欠账较多，管理机制尚不健全，亟待从顶层设计出发，进行全面构建与系统性升级，以守住城市安全底线。",
-        advices: `
-          <li style="margin-bottom: 12px;"><strong>坚守城市安全底线，开展地毯式隐患排查：</strong>面对严峻的防涝形势，首要任务是“保生命、保运转”。必须立即组织力量，对全市范围内的低洼社区、老旧小区、下穿立交、地下空间等高风险区域进行地毯式隐患排查。对排查出的严重易涝点设立明显的警示标志，并制定“一点一预案”的临时度汛措施。在暴雨期间，果断采取交通管制、人员疏散等强制性手段，坚决杜绝群死群伤事件的发生。</li>
-          <li style="margin-bottom: 12px;"><strong>加大财政倾斜，加快基础防涝工程建设：</strong>大幅提高防涝减灾工程在政府固定资产投资中的占比，积极争取专项债券和上级资金支持。将有限的资金集中用于解决最紧迫的硬件短板，重点推进主干排水管网的新建与扩容，以及关键节点大型排涝泵站的建设。严格按照国家最新标准重新核定并提升城市防洪排涝设计重现期，从根本上扭转基础设施薄弱的被动局面，夯实城市生存的物理底座。</li>
-          <li style="margin-bottom: 12px;"><strong>从零到一建立基础预警与社会联动机制：</strong>尽快补齐管理软实力的短板，建立气象、水务、应急等部门的实时联动机制，确保灾害性天气预警信息能够迅速转化为行动指令。制定并严格落实极端天气下的“停工、停学、停运、停业”刚性预案。同时，加强公众防灾减灾宣传教育，普及内涝避险常识，严格规范洪泛区和低洼地带的土地开发利用，从源头上控制新增风险暴露，逐步构建全社会共同参与的防线。</li>
-        `
-      }
-    };
-
-    const currentLevelData = levelTextMap[window.currentDataLevel || 'mid'];
-
-    // 渲染主体
     reportBody.innerHTML = `
       <div>
-        <div class="r-title">城市洪涝韧性评估报告</div>
+        <div class="r-title">城市洪涝韧性评估报告（极简演示版）</div>
         <div class="r-meta">
-          身份：<b>${escapeHtml(roleText)}</b> ｜ 城市/项目：<b>${escapeHtml(city)}</b> ｜ 日期：<b>${escapeHtml(date)}</b> ｜ 对象数：<b>${OBJECTS.length}</b> ｜ 指标数：<b>${INDICATORS.length}</b>
+          身份：<b>${roleText}</b> ｜ 城市/项目：<b>${escapeHtml(city)}</b> ｜ 日期：<b>${date}</b> ｜ 对象数：<b>${OBJECTS.length}</b> ｜ 指标数：<b>${INDICATORS.length}</b>
         </div>
 
         <div class="kpi">
           <div class="box">
-            <div class="big" style="color:${bestGrade.color};">${escapeHtml(OBJECTS[bestIdx])} · ${S[bestIdx].toFixed(4)}</div>
+            <div class="big" style="color:${bestGrade.color};">${OBJECTS[bestIdx]} · ${S[bestIdx].toFixed(4)}</div>
             <div class="small">最高贴近度（韧性指数）｜等级：${bestGrade.label}</div>
           </div>
           <div class="box">
-            <div class="big" style="color:${worstGrade.color};">${escapeHtml(OBJECTS[worstIdx])} · ${S[worstIdx].toFixed(4)}</div>
+            <div class="big" style="color:${worstGrade.color};">${OBJECTS[worstIdx]} · ${S[worstIdx].toFixed(4)}</div>
             <div class="small">最低贴近度（韧性指数）｜等级：${worstGrade.label}</div>
           </div>
           <div class="box">
             <div class="big">方法链路</div>
             <div class="small">极差标准化 → 熵权法（e,d,w）→ TOPSIS（P⁺/P⁻, L⁺/L⁻, S）</div>
-          </div>
-        </div>
-
-        <div class="viz-grid">
-          <div class="viz-card">
-            <div class="viz-title">图1：贴近度 S（越高韧性越强）</div>
-            <div class="canvas-wrap"><canvas id="chartS"></canvas></div>
-          </div>
-          <div class="viz-card">
-            <div class="viz-title">图2：最低对象短板差距 Top3</div>
-            <div class="canvas-wrap"><canvas id="chartGaps"></canvas></div>
-          </div>
-        </div>
-
-        <div class="viz-grid" style="grid-template-columns: 1fr;">
-          <div class="viz-card">
-            <div class="viz-title">图3：四维度结构雷达图（按维度聚合归一，仅用于结构对比）</div>
-            <div class="canvas-wrap"><canvas id="chartRadar"></canvas></div>
           </div>
         </div>
 
@@ -724,12 +454,13 @@ async function onCompute() {
 
         <hr class="sep"/>
 
-        <h3 style="margin:0 0 8px 0;">B. TOPSIS：正理想解（摘录）</h3>
+        <h3 style="margin:0 0 8px 0;">B. TOPSIS：正/负理想解（摘录）</h3>
         <table class="small-table">
           <thead>
             <tr>
               <th>指标（前6项摘录）</th>
               <th style="text-align:right;">正理想 p⁺</th>
+              <th style="text-align:right;">负理想 p⁻</th>
             </tr>
           </thead>
           <tbody>${idealRows}</tbody>
@@ -753,37 +484,17 @@ async function onCompute() {
 
         <hr class="sep"/>
 
-        <h3 style="margin:0 0 8px 0;">D. 作用解释：标杆经验与关键短板剖析</h3>
-        <div class="hint">以“加权规范化值与正理想解的差距”判定优势与短板（差距越小优势越明显，差距越大越拖后腿）。</div>
-        
-        <div style="margin-top:12px; font-size:13px; color:#4facfe; margin-bottom: 12px; line-height: 1.6; background: rgba(79, 172, 254, 0.1); padding: 10px; border-radius: 4px;">
-          ${currentLevelData.desc}
-        </div>
-        
-        <div style="margin-top:12px;">
-          <b style="color: #4facfe;">🏆 标杆分析：对象 ${escapeHtml(OBJECTS[bestIdx])} 的核心优势 (Top 3)</b>
-          <p style="font-size: 13px; color: #aaa; margin: 4px 0 8px 0;">该对象在本次评估中表现最优，其在以下指标上高度契合正理想解，构成了其高韧性的核心支撑：</p>
-          <ul style="margin:8px 0 16px 20px; font-size: 14px; line-height: 1.6; color: #ddd;">
-            ${bestGapList}
-          </ul>
-        </div>
-
-        <div style="margin-top:12px;">
-          <b style="color: #ff6b6b;">⚠️ 短板剖析：对象 ${escapeHtml(OBJECTS[worstIdx])} 的关键制约 (Top 3)</b>
-          <p style="font-size: 13px; color: #aaa; margin: 4px 0 8px 0;">该对象在本次评估中排名垫底，以下指标严重偏离最优水平，是后续资源倾斜与治理的重中之重：</p>
-          <ul style="margin:8px 0 0 20px; font-size: 14px; line-height: 1.6; color: #ddd;">
-            ${worstGapList}
-          </ul>
+        <h3 style="margin:0 0 8px 0;">D. 作用解释：最低韧性对象的关键短板（Top3）</h3>
+        <div class="hint">以“加权规范化值与正理想解的差距”判定短板（差距越大，越拖后腿）。</div>
+        <div style="margin-top:8px;">
+          <b>${OBJECTS[worstIdx]}</b> 的主要短板为：
+          <ol style="margin:8px 0 0 20px;">${gapList}</ol>
         </div>
 
         <hr class="sep"/>
 
-        <h3 style="margin:0 0 8px 0;">E. 建设与改进建议（基于当前场景深度定制）</h3>
-        <div class="ai-box" style="margin-top:10px;">
-          <ul style="margin:0; padding-left:20px; line-height:1.7; font-size: 14px; color: #eee;">
-            ${currentLevelData.advices}
-          </ul>
-        </div>
+        <h3 style="margin:0 0 8px 0;">E. 建议（按身份）</h3>
+        ${advice}
 
         <hr class="sep"/>
         <div class="hint">
@@ -792,21 +503,12 @@ async function onCompute() {
       </div>
     `;
 
-    // 画图 (完全保留，不影响原来的图表生成)
-    renderCharts({
-      S, bestIdx, worstIdx,
-      dimNorm,
-      gaps,
-      gradeColors: { best: bestGrade.color, worst: worstGrade.color }
-    });
-
     statusEl.textContent = `已计算：生成报告成功（${new Date().toLocaleTimeString()}）`;
   } catch (err) {
     statusEl.textContent = `计算失败：${err.message}`;
-    destroyCharts();
     reportBody.innerHTML = `<div class="empty" style="border-color: rgba(255,107,107,.5);">计算失败：${escapeHtml(err.message)}</div>`;
   }
 }
 
-
 init();
+
