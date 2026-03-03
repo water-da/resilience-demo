@@ -10,36 +10,72 @@
 
   <!-- ========== Landing：先选身份 ========== -->
   <main class="container" id="landingView">
-    <section class="card">
-      <div class="card-hd">
-        <h2>选择身份进入系统</h2>
-        <div class="hint">无需账号密码。身份将影响报告措辞与建议模板，计算逻辑保持一致。</div>
+    <section class="card hero">
+      <div class="hero-bg" aria-hidden="true"></div>
+
+      <div class="card-hd hero-hd">
+        <div class="hero-content">
+          <div class="hero-text">
+            <div class="hero-top">
+              <div class="hero-badge">Resilience Lab · Demo</div>
+              <div class="hero-kicker">欢迎使用</div>
+            </div>
+
+            <h1 class="hero-title">城市洪涝韧性评估系统</h1>
+            <div class="hero-subtitle">
+              录入 3 个评价对象 → 极差标准化 → 熵权法 → TOPSIS → 自动生成可视化报告
+            </div>
+            
+              <div class="welcome-msg">
+              <p style="font-size: 16px; color: var(--text); font-weight: 600; margin-bottom: 12px;">
+                👋 很高兴遇见您！欢迎来到城市洪涝韧性评估实验室！
+              </p>
+              <p>
+                建设一座能够从容应对风雨的“韧性城市”，是一项了不起的工程，而您正是这项事业的重要推动者！在这个充满挑战的时代，我们非常激动能为您提供这款强大的评估工具。
+              </p>
+              <p>
+                在这里，繁杂的数据不再枯燥。我们将通过科学的数学模型与前沿的 AI 洞察，帮您一键透视城市的“防汛健康底子”。无论您是规划蓝图的决策者、评估风险的精算专家，还是守护城市生命线的运营先锋，系统都会为您量身定制专属的分析视角。
+              </p>
+              <p style="color: var(--accent); font-weight: 600; margin-top: 16px;">
+                ✨ 准备好探索数据背后的故事了吗？请在下方选择您的专属身份，让我们即刻启程！
+              </p>
+            </div>
+
+          </div>
+          
+          <div class="hero-image">
+            <!-- 使用了一张契合暗色主题的城市俯瞰图作为演示，您可以替换为自己的本地图片 -->
+            <img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?auto=format&fit=crop&w=800&q=80" alt="城市俯瞰图" loading="lazy" />
+          </div>
+        </div>
       </div>
 
       <div class="card-bd">
+        <div class="role-header">
+          <span class="role-header-title">请选择您的身份以开启评估</span>
+          <span class="hint" style="margin-top:0;">提示：身份将影响报告措辞与建议侧重点，底层计算逻辑保持一致。</span>
+        </div>
+        
         <div class="role-grid">
-          <button class="role-card" data-role="gov">
-            <div class="role-title">政府部门</div>
-            <div class="role-desc">关注：治理优先级、短板诊断、政策建议</div>
+          <button class="role-card" data-role="gov" type="button">
+            <div class="role-title">🏛️ 政府部门</div>
+            <div class="role-desc">关注：治理优先级、短板诊断、宏观政策建议</div>
           </button>
 
-          <button class="role-card" data-role="ins">
-            <div class="role-title">保险机构</div>
-            <div class="role-desc">关注：风险分层、核保提示、定价要点（演示口径）</div>
+          <button class="role-card" data-role="ins" type="button">
+            <div class="role-title">🛡️ 保险机构</div>
+            <div class="role-desc">关注：风险分层、核保提示、定价与理赔要点</div>
           </button>
 
-          <button class="role-card" data-role="ops">
-            <div class="role-title">基础设施运营方</div>
+          <button class="role-card" data-role="ops" type="button">
+            <div class="role-title">⚙️ 基础设施运营方</div>
             <div class="role-desc">关注：设施脆弱点、运维优先级、监测预警能力</div>
           </button>
-        </div>
-
-        <div class="note" style="margin-top:12px;">
-          提示：进入后右上角可随时切换身份。
         </div>
       </div>
     </section>
   </main>
+
 
   <!-- ========== Main：主页面 ========== -->
   <div id="mainView" class="hidden">
@@ -48,18 +84,17 @@
         <div class="logo">R</div>
         <div>
           <div class="title">城市洪涝韧性评估（演示站）</div>
-          <div class="subtitle">熵权法 + TOPSIS（按流程展示关键中间结果）</div>
+          <div class="subtitle">熵权法 + TOPSIS（展示关键中间结果）</div>
         </div>
       </div>
 
       <div class="top-actions">
-        <!-- 右上角展示身份（可切换） -->
-        <select id="roleSelect" class="control">
+        <select id="roleSelect" class="control" title="切换身份">
           <option value="gov">政府部门</option>
           <option value="ins">保险机构</option>
           <option value="ops">基础设施运营方</option>
         </select>
-        <button id="btnPrint" class="btn btn-ghost">导出PDF / 打印</button>
+        <button id="btnPrint" class="btn btn-ghost" type="button">导出PDF / 打印</button>
       </div>
     </header>
 
@@ -94,11 +129,11 @@
 
         <div class="card-bd">
           <div class="toolbar">
-            <button id="btnFillHigh" class="btn">填充示例：高韧性</button>
-            <button id="btnFillMid" class="btn">填充示例：中韧性</button>
-            <button id="btnFillLow" class="btn">填充示例：低韧性</button>
+            <button id="btnFillHigh" class="btn" type="button">填充示例：高韧性</button>
+            <button id="btnFillMid" class="btn" type="button">填充示例：中韧性</button>
+            <button id="btnFillLow" class="btn" type="button">填充示例：低韧性</button>
             <div class="spacer"></div>
-            <button id="btnReset" class="btn btn-ghost">清空</button>
+            <button id="btnReset" class="btn btn-ghost" type="button">清空</button>
           </div>
 
           <div class="table-wrap">
@@ -117,7 +152,7 @@
           </div>
 
           <div class="note">
-            说明：方向 = 正向（越大越好）/ 负向（越大越差）。本 Demo 用代表性指标演示；后续可扩展到 33 项。
+            说明：方向 = 正向（越大越好）/ 负向（越大越差）。本 Demo 用代表性指标演示
           </div>
         </div>
       </section>
@@ -130,18 +165,18 @@
         </div>
         <div class="card-bd">
           <div class="toolbar">
-            <button id="btnCompute" class="btn btn-primary">生成报告</button>
+            <button id="btnCompute" class="btn btn-primary" type="button">生成报告</button>
             <div class="spacer"></div>
             <div id="status" class="status">未计算</div>
           </div>
         </div>
       </section>
 
-      <!-- 报告 -->
+      <!-- 报告（放下端：保持你的布局要求） -->
       <section class="card report" id="report">
         <div class="card-hd">
-          <h2>报告预览（极简版）</h2>
-          <div class="hint">包含：权重表、正负理想解（摘录）、距离与贴近度、短板Top3（解释作用）。</div>
+          <h2>报告预览（可视化增强版）</h2>
+          <div class="hint">包含：图表摘要、权重表、正理想解（摘录）、距离与贴近度、短板Top3。</div>
         </div>
 
         <div class="card-bd" id="reportBody">
@@ -151,10 +186,12 @@
     </main>
 
     <footer class="footer">
-      演示站：仅用于产品展示。正式版可接入完整 33 指标体系与真实数据源。
+      演示站：仅用于产品展示。
     </footer>
   </div>
 
+  <!-- 图表库：只做可视化，不参与计算 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
