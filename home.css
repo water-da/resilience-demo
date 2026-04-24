@@ -1,0 +1,58 @@
+.topbar {
+  background: rgba(9, 13, 25, 0.85);
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-link {
+  color: var(--text);
+  margin: 0 15px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav-link:hover {
+  text-decoration: underline;
+}
+
+.intro-section, .features-section, .call-to-action {
+  margin: 20px 0;
+  padding: 20px;
+  background: rgba(15, 26, 51, 0.88);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.features-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.features-section li {
+  margin: 10px 0;
+}
+
+.call-to-action {
+  text-align: center;
+}
+
+.call-to-action .btn {
+  padding: 10px 20px;
+  background: var(--accent);
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+.call-to-action .btn:hover {
+  background: var(--accent2);
+}
+
+.footer {
+  text-align: center;
+  padding: 10px 0;
+  background: rgba(15, 26, 51, 0.88);
+  color: var(--muted);
+}
