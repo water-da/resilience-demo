@@ -1,5 +1,9 @@
-// 记录当前加载的示例数据级别（high, mid, low），用于动态生成报告建议
 window.currentDataLevel = 'mid'; 
+window.addEventListener('DOMContentLoaded', initMap);
+
+let mapChart = null;
+let mapData = null;
+
 
 // ========= 基础配置：代表性指标（28项完整版）=========
 const INDICATORS = [
@@ -542,6 +546,8 @@ function renderCharts({S, bestIdx, worstIdx, dimNorm, gaps, gradeColors}){
 
 // ========= 生成报告 =========
 async function onCompute() {
+  // 在 onCompute 函数开始位置附近添加
+const selectedDistrict = document.getElementById('districtSelect').value;
   try {
     statusEl.textContent = "计算中…";
     const X = readMatrix();
@@ -557,7 +563,8 @@ async function onCompute() {
 
     const bestIdx = S.map((v, idx) => ({v, idx})).sort((a,b)=>b.v-a.v)[0].idx;
     const worstIdx = S.map((v, idx) => ({v, idx})).sort((a,b)=>a.v-b.v)[0].idx;
-
+    
+    const bestCityName = OBJECTS[bestIdx]; // 获取最优城市名
     const bestGrade = gradeByS(S[bestIdx]);
     const worstGrade = gradeByS(S[worstIdx]);
 
@@ -665,32 +672,42 @@ async function onCompute() {
 
     const currentLevelData = levelTextMap[window.currentDataLevel || 'mid'];
 
-    // 渲染主体
+// 渲染主体（在原有 innerHTML 基础上微调排版）
     reportBody.innerHTML = `
-      <div>
-        <div class="r-title">城市洪涝韧性评估报告</div>
+      <div class="report-wrapper">
+        <div class="r-title" style="display: flex; justify-content: space-between; align-items: flex-end;">
+          <span>城市洪涝韧性评估报告</span>
+          <span style="font-size: 12px; font-weight: normal; opacity: 0.7;">生成时间：${new Date().toLocaleString()}</span>
+        </div>
+        
         <div class="r-meta">
-          身份：<b>${escapeHtml(roleText)}</b> ｜ 城市/项目：<b>${escapeHtml(city)}</b> ｜ 日期：<b>${escapeHtml(date)}</b> ｜ 对象数：<b>${OBJECTS.length}</b> ｜ 指标数：<b>${INDICATORS.length}</b>
+          身份：<b>${escapeHtml(roleText)}</b> ｜ 城市/项目：<b>${escapeHtml(city)}</b> ｜ 对象：<b>${OBJECTS.length}</b> ｜ 指标：<b>${INDICATORS.length}</b>
         </div>
 
-        <div class="kpi">
-          <div class="box">
-            <div class="big" style="color:${bestGrade.color};">${escapeHtml(OBJECTS[bestIdx])} · ${S[bestIdx].toFixed(4)}</div>
-            <div class="small">最高贴近度（韧性指数）｜等级：${bestGrade.label}</div>
+        <div class="kpi" style="display: flex; gap: 15px; margin-bottom: 25px;">
+          <div class="box" style="flex: 1; border-top: 4px solid ${bestGrade.color}; background: rgba(255,255,255,0.02);">
+            <div class="small">🏆 表现最优对象</div>
+            <div class="big" style="color:${bestGrade.color}; margin: 8px 0;">${escapeHtml(OBJECTS[bestIdx])}</div>
+            <div class="small">贴近度指数：<b>${S[bestIdx].toFixed(4)}</b> ｜ 等级：${bestGrade.label}</div>
           </div>
-          <div class="box">
-            <div class="big" style="color:${worstGrade.color};">${escapeHtml(OBJECTS[worstIdx])} · ${S[worstIdx].toFixed(4)}</div>
-            <div class="small">最低贴近度（韧性指数）｜等级：${worstGrade.label}</div>
+          
+          <div class="box" style="flex: 1; border-top: 4px solid #ff6b6b; background: rgba(255,255,255,0.02);">
+            <div class="small">⚠️ 风险预警对象</div>
+            <div class="big" style="color:#ff6b6b; margin: 8px 0;">${escapeHtml(OBJECTS[worstIdx])}</div>
+            <div class="small">贴近度指数：<b>${S[worstIdx].toFixed(4)}</b> ｜ 等级：${worstGrade.label}</div>
           </div>
-          <div class="box">
-            <div class="big">方法链路</div>
-            <div class="small">极差标准化 → 熵权法（e,d,w）→ TOPSIS（P⁺/P⁻, L⁺/L⁻, S）</div>
+
+          <div class="box" style="flex: 0.8; border-top: 4px solid var(--accent); opacity: 0.9;">
+            <div class="small">算法链路</div>
+            <div style="font-size: 14px; font-weight: bold; margin-top: 12px; line-height: 1.4;">
+              极差标准化 <br> 熵权法 + TOPSIS
+            </div>
           </div>
         </div>
 
         <div class="viz-grid">
           <div class="viz-card">
-            <div class="viz-title">图1：贴近度 S（越高韧性越强）</div>
+            <div class="viz-title">图1：贴近度 S 分布</div>
             <div class="canvas-wrap"><canvas id="chartS"></canvas></div>
           </div>
           <div class="viz-card">
@@ -699,96 +716,50 @@ async function onCompute() {
           </div>
         </div>
 
-        <div class="viz-grid" style="grid-template-columns: 1fr;">
+        <div class="viz-grid" style="grid-template-columns: 1fr; margin-top: 15px;">
           <div class="viz-card">
-            <div class="viz-title">图3：四维度结构雷达图（按维度聚合归一，仅用于结构对比）</div>
+            <div class="viz-title">图3：多维度结构雷达图</div>
             <div class="canvas-wrap"><canvas id="chartRadar"></canvas></div>
           </div>
         </div>
 
-        <hr class="sep"/>
+        <div style="margin-top: 30px; padding: 20px; background: rgba(87, 166, 255, 0.05); border: 1px solid rgba(87, 166, 255, 0.15); border-radius: 8px;">
+          <h3 style="margin: 0 0 15px 0; color: var(--accent);">诊断结论与改进建议</h3>
+          
+          <div style="font-size: 14px; line-height: 1.8; color: #ddd;">
+            <p style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed rgba(255,255,255,0.1);">
+               <b>场景分析：</b>${currentLevelData.desc}
+            </p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <b style="color: #4facfe;">🏆 标杆优势指标：</b>
+                <ul style="margin: 8px 0; padding-left: 20px; font-size: 13px;">${bestGapList}</ul>
+              </div>
+              <div>
+                <b style="color: #ff6b6b;">⚠️ 关键制约短板：</b>
+                <ul style="margin: 8px 0; padding-left: 20px; font-size: 13px;">${worstGapList}</ul>
+              </div>
+            </div>
 
-        <h3 style="margin:0 0 8px 0;">A. 熵权法结果：指标权重</h3>
-        <div class="hint">样本差异越大 → 信息熵越小 → 权重越大。</div>
-        <table class="small-table">
-          <thead>
-            <tr>
-              <th>指标</th>
-              <th style="text-align:right;">熵值 e</th>
-              <th style="text-align:right;">差异系数 d=1-e</th>
-              <th style="text-align:right;">权重 w</th>
-            </tr>
-          </thead>
-          <tbody>${weightRows}</tbody>
-        </table>
-
-        <hr class="sep"/>
-
-        <h3 style="margin:0 0 8px 0;">B. TOPSIS：正理想解（摘录）</h3>
-        <table class="small-table">
-          <thead>
-            <tr>
-              <th>指标（前6项摘录）</th>
-              <th style="text-align:right;">正理想 p⁺</th>
-            </tr>
-          </thead>
-          <tbody>${idealRows}</tbody>
-        </table>
-
-        <hr class="sep"/>
-
-        <h3 style="margin:0 0 8px 0;">C. 距离与贴近度（韧性指数）</h3>
-        <table class="small-table">
-          <thead>
-            <tr>
-              <th>对象</th>
-              <th style="text-align:right;">到正理想距离 L⁺</th>
-              <th style="text-align:right;">到负理想距离 L⁻</th>
-              <th style="text-align:right;">贴近度 S</th>
-              <th style="text-align:center;">等级</th>
-            </tr>
-          </thead>
-          <tbody>${resultRows}</tbody>
-        </table>
-
-        <hr class="sep"/>
-
-        <h3 style="margin:0 0 8px 0;">D. 作用解释：标杆经验与关键短板剖析</h3>
-        <div class="hint">以“加权规范化值与正理想解的差距”判定优势与短板（差距越小优势越明显，差距越大越拖后腿）。</div>
-        
-        <div style="margin-top:12px; font-size:13px; color:#4facfe; margin-bottom: 12px; line-height: 1.6; background: rgba(79, 172, 254, 0.1); padding: 10px; border-radius: 4px;">
-          ${currentLevelData.desc}
-        </div>
-        
-        <div style="margin-top:12px;">
-          <b style="color: #4facfe;">🏆 标杆分析：对象 ${escapeHtml(OBJECTS[bestIdx])} 的核心优势 (Top 3)</b>
-          <p style="font-size: 13px; color: #aaa; margin: 4px 0 8px 0;">该对象在本次评估中表现最优，其在以下指标上高度契合正理想解，构成了其高韧性的核心支撑：</p>
-          <ul style="margin:8px 0 16px 20px; font-size: 14px; line-height: 1.6; color: #ddd;">
-            ${bestGapList}
-          </ul>
+            <div class="ai-box" style="margin-top: 20px; padding: 15px; background: rgba(0,0,0,0.2);">
+              <b style="color: var(--accent);">📑 专家改进路线：</b>
+              <ul style="margin: 10px 0 0 0; padding-left: 20px;">${currentLevelData.advices}</ul>
+            </div>
+          </div>
         </div>
 
-        <div style="margin-top:12px;">
-          <b style="color: #ff6b6b;">⚠️ 短板剖析：对象 ${escapeHtml(OBJECTS[worstIdx])} 的关键制约 (Top 3)</b>
-          <p style="font-size: 13px; color: #aaa; margin: 4px 0 8px 0;">该对象在本次评估中排名垫底，以下指标严重偏离最优水平，是后续资源倾斜与治理的重中之重：</p>
-          <ul style="margin:8px 0 0 20px; font-size: 14px; line-height: 1.6; color: #ddd;">
-            ${worstGapList}
-          </ul>
-        </div>
-
-        <hr class="sep"/>
-
-        <h3 style="margin:0 0 8px 0;">E. 建设与改进建议（基于当前场景深度定制）</h3>
-        <div class="ai-box" style="margin-top:10px;">
-          <ul style="margin:0; padding-left:20px; line-height:1.7; font-size: 14px; color: #eee;">
-            ${currentLevelData.advices}
-          </ul>
-        </div>
-
-        <hr class="sep"/>
-        <div class="hint">
-          免责声明：本报告用于演示“熵权法 + TOPSIS”评价链路。结果受样本规模、指标口径与输入质量影响。
-        </div>
+        <details style="margin-top: 20px; cursor: pointer; opacity: 0.8;">
+          <summary style="font-size: 13px; color: var(--muted);">查看原始权重计算详情 (熵权法结果)</summary>
+          <div style="padding-top: 15px;">
+            <table class="small-table">
+              <thead>
+                <tr><th>指标</th><th style="text-align:right;">熵值 e</th><th style="text-align:right;">差异 d</th><th style="text-align:right;">权重 w</th></tr>
+              </thead>
+              <tbody>${weightRows}</tbody>
+            </table>
+          </div>
+        </details>
       </div>
     `;
 
@@ -800,12 +771,119 @@ async function onCompute() {
       gradeColors: { best: bestGrade.color, worst: worstGrade.color }
     });
 
+    // --- 修正后的地图联动代码 ---
+      if (mapChart && selectedDistrict) {
+        const levelScoreMap = {
+            high: 2,
+            mid: 1,
+            low: 0
+        };
+        const score = levelScoreMap[window.currentDataLevel] ?? 1;
+
+
+          updateMapDistrictColor(selectedDistrict, score);
+      } else {
+          console.warn("未选择地区或地图未加载，跳过地图染色");
+      }
+
+
+
+
     statusEl.textContent = `已计算：生成报告成功（${new Date().toLocaleTimeString()}）`;
   } catch (err) {
     statusEl.textContent = `计算失败：${err.message}`;
     destroyCharts();
     reportBody.innerHTML = `<div class="empty" style="border-color: rgba(255,107,107,.5);">计算失败：${escapeHtml(err.message)}</div>`;
   }
+}
+async function initMap() {
+    const mapDom = document.getElementById('beijingMap');
+    if (!mapDom) return;
+
+    // 容器不可见时等待
+    if (mapDom.offsetWidth === 0 || mapDom.offsetHeight === 0) {
+        setTimeout(initMap, 100);
+        return;
+    }
+
+    // 防止重复初始化
+    if (mapChart) {
+        mapChart.dispose();
+    }
+
+    mapChart = echarts.init(mapDom, 'dark');
+
+    try {
+        const url = 'https://geo.datav.aliyun.com/areas_v3/bound/110000_full.json';
+        const response = await fetch(url);
+        const bjJson = await response.json();
+        echarts.registerMap('BJ', bjJson);
+
+        const districts = [
+            "东城区", "西城区", "朝阳区", "海淀区", "丰台区", "石景山区",
+            "门头沟区", "房山区", "通州区", "顺义区", "昌平区", "大兴区",
+            "怀柔区", "平谷区", "密云区", "延庆区"
+        ];
+
+        // 只在第一次初始化时生成随机数据
+        if (!mapData) {
+            mapData = districts.map(name => ({
+                name,
+                value: Math.floor(Math.random() * 3)
+            }));
+        }
+
+        const option = {
+            backgroundColor: 'transparent',
+            tooltip: { trigger: 'item' },
+            visualMap: {
+                show: true,
+                min: 0,
+                max: 2,
+                splitNumber: 3,
+                orient: 'horizontal',
+                left: 'center',
+                bottom: '20px',
+                inRange: { color: ['#ff6b6b', '#fadb14', '#4facfe'] },
+                text: ['高', '低'],
+                textStyle: { color: '#aaa' }
+            },
+            series: [{
+                name: '北京市',
+                type: 'map',
+                map: 'BJ',
+                label: { show: true, color: '#fff', fontSize: 10 },
+                data: mapData
+            }]
+        };
+
+        mapChart.setOption(option);
+
+        setTimeout(() => {
+            if (mapChart) mapChart.resize();
+        }, 200);
+
+    } catch (error) {
+        console.error("地图加载失败:", error);
+    }
+}
+
+function updateMapDistrictColor(districtName, value) {
+    if (!mapChart || !mapData || !districtName) return;
+
+    const target = mapData.find(item => item.name === districtName);
+    if (!target) {
+        console.warn("未找到对应区块：", districtName);
+        return;
+    }
+
+    target.value = value;
+
+    mapChart.setOption({
+        series: [{
+            data: mapData
+        }]
+    });
 }
 
 
