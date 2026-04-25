@@ -2,7 +2,7 @@
   --text: #fff;
   --muted: #aaa;
   --accent: #007bff;
-  --accent2: #0056b3;
+  --accent2: #a7bcd2;
 }
 
 body {
@@ -14,12 +14,29 @@ body {
 }
 
 .topbar {
-  background: rgba(9, 13, 25, 0.85);
-  padding: 10px 20px;
+  background: linear-gradient(135deg, rgba(18, 54, 62, 0.9), rgba(0, 123, 255, 0.8));
+  padding: 15px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
 }
+
+.top-actions .nav-link {
+  color: #f0f8ff;
+  text-decoration: none;
+  padding: 10px 15px;
+  transition: background-color 0.3s, transform 0.3s;
+  border-radius: 5px;
+}
+
+.top-actions .nav-link:hover {
+  background-color: rgba(0, 123, 255, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
 
 .nav-link {
   color: var(--text);
@@ -92,26 +109,49 @@ body {
   text-align: center;
 }
 
-.hero-content h1 {
-  font-size: 3rem;
-  margin-bottom: 0.5rem;
-}
-
-.hero-content p {
-  font-size: 1.5rem;
-  margin-top: 0.5rem;
-}
 .hero-title {
-  font-size: 4rem;
+  font-family: 'Cinzel Decorative', cursive;
+  font-size: 5rem;
   font-weight: 700;
   color: #f0f8ff;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  margin-bottom: 1rem;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  margin-top: 1rem;
+  margin-bottom: 5rem;
 }
 
 .hero-subtitle {
-  font-size: 2rem;
+  font-family: 'STXINGKAI', cursive;
+  font-size: 3rem;
   font-weight: 500;
   color: #f0f8ff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
+  margin-top: 1.5rem;
+}
+
+
+
+
+.brand {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  margin-right:1rem;
+}
+
+.logo-image {
+  max-height: 100px;
+}
+
+.title {
+  height: 50px;
+  margin-left: 50px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: var(--muted);
 }
