@@ -4,10 +4,108 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>韧脉城市 - 一站剖析</title>
-  <script src="./top.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
   <link rel="stylesheet" href="./home.css" />
+  <style>
+    body {
+        margin: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background-color: #0f1a33; /* 背景颜色 */
+        color: #fff; /* 文字颜色 */
+    }
+
+    #particles-js {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        z-index: -1; /* 确保粒子在背景 */
+    }
+
+    .topbar {
+        background: rgba(18, 54, 62, 0.7);
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        border-radius: 8px;
+    }
+
+    .top-actions .nav-link {
+        color: #f0f8ff;
+        text-decoration: none;
+        padding: 10px 15px;
+        transition: background-color 0.3s, transform 0.3s;
+        border-radius: 5px;
+    }
+
+    .top-actions .nav-link:hover {
+        background-color: rgba(0, 123, 255, 0.6);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-section {
+        position: relative;
+        height: 80vh;
+        overflow: hidden;
+    }
+
+    .hero-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .hero-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+
+    .hero-title {
+        font-family: 'Cinzel Decorative', cursive;
+        font-size: 5rem;
+        font-weight: 700;
+        color: #f0f8ff;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+        margin-top: 1rem;
+        margin-bottom: 5rem;
+    }
+
+    .hero-subtitle {
+        font-family: 'STXINGKAI', cursive;
+        font-size: 3rem;
+        font-weight: 500;
+        color: #f0f8ff;
+        text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.5);
+        margin-top: 1.5rem;
+    }
+
+    .intro-section {
+        margin: 20px 0;
+        padding: 20px;
+        background: rgba(15, 26, 51, 0.88);
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer {
+        text-align: center;
+        padding: 10px 0;
+        background: rgba(15, 26, 51, 0.88);
+        color: #aaa;
+    }
+  </style>
 </head>
 <body>
+
+  <div id="particles-js"></div>
   <!-- ========== 顶部导航栏 ========== -->
   <header class="topbar">
     <div class="brand">
@@ -20,13 +118,13 @@
       </div>
     </div>
     <nav class="top-actions">
-    <a href="/index.html" class="nav-link active">首页</a>
-    <a href="#" class="nav-link">产品介绍</a>
-    <a href="/resilience-assessment.html" class="nav-link">韧性评估</a>
-    <a href="#" class="nav-link">决策支持</a>
-    <a href="#" class="nav-link">场景方案</a>
-    <a href="#" class="nav-link">关于我们</a>
-    <a href="#" class="nav-link">用户中心</a>
+      <a href="/index.html" class="nav-link active">首页</a>
+      <a href="#" class="nav-link">产品介绍</a>
+      <a href="/resilience-assessment.html" class="nav-link">韧性评估</a>
+      <a href="#" class="nav-link">决策支持</a>
+      <a href="#" class="nav-link">场景方案</a>
+      <a href="#" class="nav-link">关于我们</a>
+      <a href="#" class="nav-link">用户中心</a>
     </nav>
   </header>
 
@@ -55,5 +153,120 @@
   <footer class="footer">
     <p>© 2026 城市洪涝韧性评估系统. 保留所有权利.</p>
   </footer>
+
+  <script>
+    // 初始化粒子效果
+    particlesJS("particles-js", {
+      "particles": {
+        "number": {
+          "value": 100,
+          "density": {
+            "enable": true,
+            "value_area": 800
+          }
+        },
+        "color": {
+          "value": "#ffffff"
+        },
+        "shape": {
+          "type": "circle",
+          "stroke": {
+            "width": 0,
+            "color": "#000000"
+          },
+          "polygon": {
+            "nb_sides": 5
+          },
+          "image": {
+            "src": "img/github.svg",
+            "width": 100,
+            "height": 100
+          }
+        },
+        "opacity": {
+          "value": 0.5,
+          "random": false,
+          "anim": {
+            "enable": false,
+            "speed": 1,
+            "opacity_min": 0.1,
+            "sync": false
+          }
+        },
+        "size": {
+          "value": 3,
+          "random": true,
+          "anim": {
+            "enable": false,
+            "speed": 40,
+            "size_min": 0.1,
+            "sync": false
+          }
+        },
+        "line_linked": {
+          "enable": true,
+          "distance": 150,
+          "color": "#ffffff",
+          "opacity": 0.4,
+          "width": 1
+        },
+        "move": {
+          "enable": true,
+          "speed": 6,
+          "direction": "none",
+          "random": false,
+          "straight": false,
+          "out_mode": "out",
+          "bounce": false,
+          "attract": {
+            "enable": false,
+            "rotateX": 600,
+            "rotateY": 1200
+          }
+        }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": {
+            "enable": true,
+            "mode": "repulse"
+          },
+          "onclick": {
+            "enable": true,
+            "mode": "push"
+          },
+          "resize": true
+        },
+        "modes": {
+          "grab": {
+            "distance": 400,
+            "line_linked": {
+              "opacity": 1
+            }
+          },
+          "bubble": {
+            "distance": 400,
+            "size": 40,
+            "duration": 2,
+            "opacity": 8,
+            "speed": 3
+          },
+          "repulse": {
+            "distance": 200,
+            "duration": 1
+          },
+          "push": {
+            "particles_nb": 4
+          },
+          "remove": {
+            "particles_nb": 2
+          }
+        }
+      },
+      "retina_detect": true
+    });
+  </script>
+
 </body>
 </html>
