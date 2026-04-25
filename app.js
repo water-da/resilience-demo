@@ -814,8 +814,8 @@ async function initMap() {
     mapChart = echarts.init(mapDom, 'dark');
 
     try {
-        const url = 'https://geo.datav.aliyun.com/areas_v3/bound/110000_full.json';
-        const response = await fetch(url);
+        const response = await fetch('./data/beijing.json');
+       
         const bjJson = await response.json();
         echarts.registerMap('BJ', bjJson);
 
